@@ -1,0 +1,58 @@
+#include <Wire.h>
+#include <LiquidCrystal_I2C.h>
+
+LiquidCrystal_I2C lcd(0x27, 16, 2);
+
+int piezoPin = A0;
+int ledPin = 8;
+
+int threshold = 500;
+int stepCount = 0;
+bool stepDetected = false;
+
+void setup() {
+
+  pinMode(ledPin, OUTPUT);
+  digitalWrite(ledPin, LOW);
+
+  lcd.init();
+  lcd.backlight();
+
+  lcd.setCursor(0,0);
+  lcd.print("Footstep Counter");
+  delay(1500);
+  lcd.clear();
+}
+
+void loop() {
+
+  int sensorValue = analogRead(piezoPin);
+  float voltage = (sensorValue * 5.0) / 1023.0;
+
+  // STEP DETECT
+  if (sensorValue > threshold && !stepDetected) {
+    stepCount++;
+    stepDetected = true;
+
+    digitalWrite(ledPin, HIGH);   // LED ON
+  }
+
+  // RESET
+  if (sensorValue < 20) {
+    stepDetected = false;
+    digitalWrite(ledPin, LOW);    // LED OFF
+  }
+
+  // SHOW ON LCD
+  lcd.clear();
+
+  lcd.setCursor(0,0);
+  lcd.print("Steps: ");
+  lcd.print(stepCount);
+
+  lcd.setCursor(0,1);
+  lcd.print("Volt: ");
+  lcd.print(voltage, 2);
+
+  delay(80);
+}
